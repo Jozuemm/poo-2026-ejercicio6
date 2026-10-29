@@ -1,36 +1,62 @@
-public class WidgetReloj {
-    private String hora;
-    private String fecha;
-    private String zonaHoraria;
+import java.awt.BorderLayout;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.Timer;
 
-    public WidgetReloj(String hora, String fecha, String zonaHoraria) {
-        this.hora = hora;
-        this.fecha = fecha;
-        this.zonaHoraria = zonaHoraria;
+public class WidgetReloj extends WidgetBase {
+    private ZoneId zonaHoraria;
+    private JPanel panel;
+    private JLabel etiqueta;
+    private Timer temporizador;
+
+    public WidgetReloj(String zonaHoraria) {
+        super("Reloj de " + zonaHoraria, 80);
+        this.zonaHoraria = ZoneId.of(zonaHoraria);
+
+        panel = new JPanel(new BorderLayout());
+        etiqueta = new JLabel(renderizar(), JLabel.CENTER);
+
+        panel.add(etiqueta, BorderLayout.CENTER);
+
+        temporizador = new Timer(1000, e -> {
+            etiqueta.setText(renderizar());
+        });
+
+        panel.addHierarchyListener(e -> {
+            if (panel.isShowing()) {
+                temporizador.start();
+            } else {
+                temporizador.stop();
+            }
+        });
     }
 
-    public String getHora() {
-        return hora;
+    @Override
+    public String renderizar() {
+        ZonedDateTime ahora = ZonedDateTime.now(zonaHoraria);
+
+        DateTimeFormatter formato =
+                DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
+        return ahora.format(formato)
+                + " - " + zonaHoraria.getId();
     }
 
-    public void setHora(String hora) {
-        this.hora = hora;
-    }
-
-    public String getFecha() {
-        return fecha;
-    }
-
-    public void setFecha(String fecha) {
-        this.fecha = fecha;
+    @Override
+    public JComponent obtenerVista() {
+        return panel;
     }
 
     public String getZonaHoraria() {
-        return zonaHoraria;
+        return zonaHoraria.getId();
     }
 
     public void setZonaHoraria(String zonaHoraria) {
-        this.zonaHoraria = zonaHoraria;
+        this.zonaHoraria = ZoneId.of(zonaHoraria);
+        etiqueta.setText(renderizar());
     }
-    
 }
